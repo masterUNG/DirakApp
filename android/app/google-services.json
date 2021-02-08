@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "478749069363",
+    "project_id": "ungcoffeedirak",
+    "storage_bucket": "ungcoffeedirak.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478749069363:android:08d70b774fd727e3135346",
+        "android_client_info": {
+          "package_name": "com.flutterthailand.dirakapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478749069363-6grbb7fu4l9sb1dumumjn9nmcsevkavh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBIXHX6bOgkD1F7-iqDAOlQv_JwA9NSFbw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478749069363-6grbb7fu4l9sb1dumumjn9nmcsevkavh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
