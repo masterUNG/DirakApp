@@ -1,5 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirakapp/models/user_model.dart';
 import 'package:dirakapp/utility/dialog.dart';
 import 'package:dirakapp/utility/my_style.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 class CreateAccount extends StatefulWidget {
@@ -116,7 +120,9 @@ class _CreateAccountState extends State<CreateAccount> {
             normalDialog(context, 'Have Space ?', 'Please Fill Every Blank');
           } else if (typeUser == null) {
             normalDialog(context, 'No Type User ?', 'Please Choose Type User');
-          } else {}
+          } else {
+            createAccountAnInsertData();
+          }
         },
       ),
       appBar: AppBar(
@@ -127,18 +133,53 @@ class _CreateAccountState extends State<CreateAccount> {
         children: [
           MyStyle().wallpaper(screen, context),
           Center(
-            child: Column(
-              children: [
-                buildDisplayName(),
-                buildTypeUser(context),
-                buildUser(),
-                buildPassword(),
-              ],
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  buildDisplayName(),
+                  buildTypeUser(context),
+                  buildUser(),
+                  buildPassword(),
+                ],
+              ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  Future<Null> createAccountAnInsertData() async {
+    await Firebase.initializeApp().then((value) async {
+      print('Initialapp Succces');
+      await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: user, password: password)
+          .then((value) async {
+        print('Create Account Success');
+        value.user.updateProfile(displayName: name);
+        String uid = value.user.uid;
+        UserModel model = UserModel(name: name, typeuser: typeUser);
+        Map<String, dynamic> data = model.toMap();
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(uid)
+            .set(data)
+            .then((value) {
+          switch (typeUser) {
+            case 'customer':
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/customerService', (route) => false);
+              break;
+            case 'shoper':
+              Navigator.pushNamedAndRemoveUntil(
+                  context, '/shoperService', (route) => false);
+              break;
+            default:
+          }
+        });
+      }).catchError(
+              (value) => normalDialog(context, value.code, value.message));
+    });
   }
 
   Theme buildTypeUser(BuildContext context) {

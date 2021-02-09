@@ -1,4 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dirakapp/models/user_model.dart';
+import 'package:dirakapp/utility/dialog.dart';
 import 'package:dirakapp/utility/my_style.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 class Authen extends StatefulWidget {
@@ -8,6 +13,7 @@ class Authen extends StatefulWidget {
 
 class _AuthenState extends State<Authen> {
   double screen;
+  String user, password;
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +41,18 @@ class _AuthenState extends State<Authen> {
 
   Center buildContent() {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          buildLogo(),
-          MyStyle().buildSizedBox(),
-          MyStyle().titleH1('Ung Coffee'),
-          buildUser(),
-          buildPassword(),
-          buildLogin(),
-        ],
+      child: SingleChildScrollView(
+              child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            buildLogo(),
+            MyStyle().buildSizedBox(),
+            MyStyle().titleH1('Ung Coffee'),
+            buildUser(),
+            buildPassword(),
+            buildLogin(),
+          ],
+        ),
       ),
     );
   }
@@ -54,7 +62,13 @@ class _AuthenState extends State<Authen> {
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: ElevatedButton(
-        onPressed: () {},
+        onPressed: () {
+          if ((user?.isEmpty ?? true) || (password?.isEmpty ?? true)) {
+            normalDialog(context, 'มีช่องว่าง ?', 'กรุณากรอกทุกช่อง คะ');
+          } else {
+            cheackAuthen();
+          }
+        },
         child: Text('Login'),
         style: ElevatedButton.styleFrom(
             primary: MyStyle().darkColor,
@@ -64,12 +78,33 @@ class _AuthenState extends State<Authen> {
     );
   }
 
+  Future<Null> cheackAuthen() async {
+    await Firebase.initializeApp().then((value) async {
+      await FirebaseAuth.instance
+          .signInWithEmailAndPassword(email: user, password: password)
+          .then((value) async {
+        await FirebaseFirestore.instance
+            .collection('user')
+            .doc(value.user.uid)
+            .snapshots()
+            .listen((event) {
+          UserModel model = UserModel.fromMap(event.data());
+          Navigator.pushNamedAndRemoveUntil(
+              context, '/${model.typeuser}Service', (route) => false);
+        });
+      }).catchError((onError) =>
+              normalDialog(context, onError.code, onError.message));
+    });
+  }
+
   Container buildUser() {
     return Container(
       decoration: MyStyle().myBox(),
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: TextField(
+        style: TextStyle(color: MyStyle().primaryColor),
+        onChanged: (value) => user = value.trim(),
         decoration: InputDecoration(
           hintStyle: TextStyle(color: MyStyle().darkColor),
           hintText: 'User :',
@@ -91,10 +126,13 @@ class _AuthenState extends State<Authen> {
   }
 
   Container buildPassword() {
-    return Container(decoration: MyStyle().myBox(),
+    return Container(
+      decoration: MyStyle().myBox(),
       margin: EdgeInsets.only(top: 16),
       width: screen * 0.6,
       child: TextField(
+        style: TextStyle(color: MyStyle().primaryColor),
+        onChanged: (value) => password = value.trim(),
         obscureText: true,
         decoration: InputDecoration(
           hintStyle: TextStyle(color: MyStyle().darkColor),
